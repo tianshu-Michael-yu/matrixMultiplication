@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-const int N = 1024;
+#define N 1024
 const int BLOCK_SIZE = 256;
+double A[N][N], B[N][N], C[N][N];
+
 
 double calc_time(struct timespec start, struct timespec end) {
   double start_sec = (double)start.tv_sec*1000000000.0 + (double)start.tv_nsec;
@@ -17,7 +19,7 @@ double calc_time(struct timespec start, struct timespec end) {
   }
 }
 
-void init_array(double A[N][N], double B[N][N], double C[N][N]) {
+void init_array() {
     int i, j;
     for (i=0; i<N; i++) {
         for (j=0; j<N; j++) {
@@ -28,7 +30,7 @@ void init_array(double A[N][N], double B[N][N], double C[N][N]) {
     }
 }
 
-void multiply_ijk(double A[N][N], double B[N][N], double C[N][N]) {
+void multiply_ijk() {
     int i, j, k;
     double sum;
     for (i=0; i<N; i++) {
@@ -42,7 +44,7 @@ void multiply_ijk(double A[N][N], double B[N][N], double C[N][N]) {
     }
 }
 
-void matrix_multiply(double A[N][N], double B[N][N], double C[N][N]) {
+void matrix_multiply() {
     for (int i = 0; i < N; i += BLOCK_SIZE) {
         for (int j = 0; j < N; j += BLOCK_SIZE) {
             for (int k = 0; k < N; k += BLOCK_SIZE) {
@@ -59,7 +61,7 @@ void matrix_multiply(double A[N][N], double B[N][N], double C[N][N]) {
     }
 }
 
-void multiply_jki(double A[N][N], double B[N][N], double C[N][N]) {
+void multiply_jki() {
     int i, j, k;
     double tmp;
     for (j=0; j<N; j++) {
@@ -72,7 +74,7 @@ void multiply_jki(double A[N][N], double B[N][N], double C[N][N]) {
     }
 }
 
-void multiply_ikj(double A[N][N], double B[N][N], double C[N][N]) {
+void multiply_ikj() {
     int i, j, k;
     double tmp;
     for (i=0; i<N; i++) {
@@ -85,7 +87,7 @@ void multiply_ikj(double A[N][N], double B[N][N], double C[N][N]) {
     }
 }
 
-void sum(double C[N][N]) {
+void sum() {
     int i, j;
     double sum = 0.0;
     for (i=0; i<N; i++) {
@@ -99,22 +101,20 @@ void sum(double C[N][N]) {
 int main(int argc, char *argv[]) {
     struct timespec start_time, end_time;
     int mod_of_multiplication = atoi(argv[1]);
-    double* A = (double*)malloc(N*N*sizeof(double));
-    double* B = (double*)malloc(N*N*sizeof(double));
-    double* C = (double*)malloc(N*N*sizeof(double));
-    init_array(A, B, C);
+    init_array();
     clock_gettime(CLOCK_MONOTONIC, &start_time);
     if (mod_of_multiplication == 0) {
-        multiply_ijk(A, B, C);
+        multiply_ijk();
     } else if (mod_of_multiplication == 1) {
-        multiply_jki(A, B, C);
+        multiply_jki();
     } else if (mod_of_multiplication == 2) {
-        multiply_ikj(A, B, C);
+        multiply_ikj();
     } else if (mod_of_multiplication == 3) {
-        matrix_multiply(A, B, C);
+        matrix_multiply();
     }
     clock_gettime(CLOCK_MONOTONIC, &end_time);
     double elaspe_s = calc_time(start_time, end_time)/1000000000.0;
     printf("Time=%f\n", elaspe_s);
-    sum(C);
+    sum();
+    return EXIT_SUCCESS;
 }
