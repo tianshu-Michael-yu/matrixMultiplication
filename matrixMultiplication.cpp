@@ -2,6 +2,8 @@
 #include <stdexcept>
 #include <stdio.h>
 #include <stdlib.h>
+#include <chrono>
+#include <iostream>
 
 class Matrix{
     public:
@@ -61,28 +63,67 @@ class Matrix{
         float *data;
 };
 
-int main(void) {
-    Matrix A(2, 3);
-    Matrix B(3, 2);
-    A.setElement(0, 0, 1.0);
-    A.setElement(0, 1, 2.0);
-    A.setElement(0, 2, 3.0);
-    A.setElement(1, 0, 4.0);
-    A.setElement(1, 1, 5.0);
-    A.setElement(1, 2, 6.0);
+void initMatrix(Matrix &mat) {
+    for (size_t i = 0; i < mat.rows; ++i) {
+        for (size_t j = 0; j < mat.cols; ++j) {
+            mat.setElement(i, j, 0.0F);
+        }
+    }
+}
 
-    B.setElement(0, 0, 7.0);
-    B.setElement(0, 1, 8.0);
-    B.setElement(1, 0, 9.0);
-    B.setElement(1, 1, 10.0);
-    B.setElement(2, 0, 11.0);
-    B.setElement(2, 1, 12.0);
-    Matrix C = A * B;
-    for (size_t i = 0; i < C.rows; ++i) {
-        for (size_t j = 0; j < C.cols; ++j) {
-            printf("%f ", C.getElement(i, j));
+void printMatrix(const Matrix &mat) {
+    for (size_t i = 0; i < mat.rows; ++i) {
+        for (size_t j = 0; j < mat.cols; ++j) {
+            printf("%f ", mat.getElement(i, j));
         }
         printf("\n");
     }
+}
+
+float a[1024][1024];
+float b[1024][1024];
+float c[1024][1024];
+
+void initMatrix(float mat[1024][1024]) {
+    for (size_t i = 0; i < 1024; ++i) {
+        for (size_t j = 0; j < 1024; ++j) {
+            mat[i][j] = 0.0F;
+        }
+    }
+}
+
+void multiply_ikj() {
+    for (size_t i=0; i<1024; ++i) {
+        for (size_t k=0; k<1024; ++k) {
+            float a_i_k = a[i][k];
+            for (size_t j=0; j<1024; ++j) {
+                c[i][j] += a_i_k * b[k][j];
+            }
+        }
+    }
+}
+
+int main(void) {
+    Matrix A(1024, 1024);
+    Matrix B(1024, 1024);
+    initMatrix(A);
+    initMatrix(B);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    Matrix C = A * B;
+    auto end = std::chrono::high_resolution_clock::now();
+
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+
+    initMatrix(a);
+    initMatrix(b);
+    initMatrix(c);
+    auto start2 = std::chrono::high_resolution_clock::now();
+    multiply_ikj();
+    auto end2 = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed2 = end2 - start2;
+    std::cout << "Elapsed time: " << elapsed2.count() << " s\n";
+
     return EXIT_SUCCESS;
 }
